@@ -17,14 +17,15 @@ const verifyToken = (req, res, next) => {
       return res.status(401).json({ message: "Token missing" });
     }
 
-    const decoded = jwt.verify(token, "secretkey");
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     req.user = decoded;
 
     next();
 
   } catch (error) {
-    res.status(401).json({ message: "Invalid token" });
+    console.error("JWT verification error:", error.message);
+    res.status(401).json({ message: "Invalid or expired token" });
   }
 };
 
@@ -38,4 +39,12 @@ const verifyAdmin = (req, res, next) => {
   next();
 };
 
-module.exports = { verifyToken, verifyAdmin };
+// Verify User (customer or admin)
+const verifyUser = (req, res, next) => {
+  if (!["user", "admin"].includes(req.user.role)) {
+    return res.status(403).json({ message: "Access denied. User access required." });
+  }
+  next();
+};
+
+module.exports = { verifyToken, verifyAdmin, verifyUser };

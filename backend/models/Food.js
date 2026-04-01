@@ -3,34 +3,49 @@ const mongoose = require("mongoose");
 const foodSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true
-  },
-  price: {
-    type: Number,
-    required: true
+    required: [true, "Food name is required"],
+    trim: true,
+    minlength: [2, "Food name must be at least 2 characters"]
   },
   category: {
     type: String,
-    required: true
+    required: [true, "Category is required"],
+    enum: ["Breakfast", "Lunch", "Dinner", "Snacks"],
+    trim: true
   },
-  veg: {
-    type: Boolean,
-    required: true
+  type: {
+    type: String,
+    required: [true, "Type is required"],
+    enum: ["Veg", "Non-Veg"],
+    trim: true
   },
   calories: {
     type: Number,
-    required: true
+    required: [true, "Calories are required"],
+    min: [0, "Calories cannot be negative"]
   },
   protein: {
     type: Number,
-    required: true
+    required: [true, "Protein is required"],
+    min: [0, "Protein cannot be negative"]
   },
-  description: {
-    type: String
+  price: {
+    type: Number,
+    required: [true, "Price is required"],
+    min: [0, "Price cannot be negative"]
   },
   image: {
-    type: String
+    type: String,
+    default: "",
+    trim: true
   }
-}, { timestamps: true });
+}, { 
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
+
+// Index for better search performance
+foodSchema.index({ name: 1, category: 1, type: 1 });
 
 module.exports = mongoose.model("Food", foodSchema);
