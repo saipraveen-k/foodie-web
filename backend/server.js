@@ -1,6 +1,8 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const http = require("http");
+const { Server } = require("socket.io");
 require("dotenv").config();
 
 // Import routes
@@ -9,11 +11,21 @@ const foodRoutes = require("./routes/foodRoutes");
 const cartRoutes = require("./routes/cartRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const complaintRoutes = require("./routes/complaintRoutes");
+const groupRoutes = require("./routes/groupRoutes");
 
 // Import middleware
 const { verifyToken, verifyAdmin } = require("./middleware/authMiddleware");
 
 const app = express();
+const server = http.createServer(app);
+
+// Socket.io setup with CORS
+const io = new Server(server, {
+  cors: {
+    origin: ["http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:3000", "http://127.0.0.1:5173"],
+    credentials: true
+  }
+});
 
 // Middleware
 app.use(cors({
@@ -28,6 +40,55 @@ app.use((req, res, next) => {
   console.log(`${req.method} ${req.path} - ${new Date().toISOString()}`);
   next();
 });
+
+// Socket.io authentication middleware
+io.use((socket, next) => {
+  const token = socket.handshake.auth.token;
+  if (!token) {
+    return next(new Error("Authentication error"));
+  }
+
+  try {
+    const jwt = require("jsonwebtoken");
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    socket.user = decoded;
+    next();
+  } catch (error) {
+    next(new Error("Invalid token"));
+  }
+});
+
+// Socket.io connection handling
+io.on("connection", (socket) => {
+  console.log(`🔌 User connected: ${socket.user.id}`);
+
+  // Join a group room
+  socket.on("join-group", (groupCode) => {
+    socket.join(`group:${groupCode}`);
+    console.log(`User ${socket.user.id} joined group room: ${groupCode}`);
+    
+    // Notify others in the group
+    socket.to(`group:${groupCode}`).emit("user-joined", {
+      userId: socket.user.id,
+      userName: socket.user.name,
+      timestamp: new Date().toISOString()
+    });
+  });
+
+  // Leave a group room
+  socket.on("leave-group", (groupCode) => {
+    socket.leave(`group:${groupCode}`);
+    console.log(`User ${socket.user.id} left group room: ${groupCode}`);
+  });
+
+  // Handle disconnection
+  socket.on("disconnect", () => {
+    console.log(`🔌 User disconnected: ${socket.user.id}`);
+  });
+});
+
+// Export io for use in routes
+app.set("io", io);
 
 // MongoDB Connection with retry logic
 const connectDB = async () => {
@@ -65,6 +126,7 @@ app.use("/api/food", foodRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/complaints", complaintRoutes);
+app.use("/api/groups", groupRoutes);
 
 // Protected route example
 app.get("/api/protected", verifyToken, (req, res) => {
@@ -150,8 +212,9 @@ process.on('SIGINT', async () => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`📍 API Base URL: http://localhost:${PORT}/api`);
+  console.log(`📡 Socket.io ready for real-time updates`);
 });

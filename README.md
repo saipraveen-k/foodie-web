@@ -132,6 +132,19 @@ npm start
 - `PUT /:id/status` - Update complaint status (admin only)
 - `GET /admin/all` - Get all complaints (admin only)
 
+### Group Orders (`/api/groups`)
+- `POST /create` - Create new group order
+- `POST /join` - Join existing group with code
+- `GET /` - Get user's groups
+- `GET /:groupCode` - Get group details (members only)
+- `POST /:groupCode/items` - Add item to group order
+- `DELETE /:groupCode/items/:itemId` - Remove item from group
+- `POST /:groupCode/close` - Close group (leader only)
+- `POST /:groupCode/leave` - Leave group
+- `DELETE /:groupCode` - Delete group (leader only)
+
+**Security:** Only group members can access group data. Non-members receive 403 Forbidden.
+
 ---
 
 ## 🔧 Testing the Backend
@@ -188,6 +201,7 @@ curl -X GET http://localhost:5000/api/protected \
 - **Carts**: userId, items (foodId, quantity), totalAmount
 - **Orders**: userId, items, totalAmount, address, status
 - **Complaints**: userId, orderId, message, status, adminResponse
+- **Groups**: groupCode, leader, members[], restaurantName, items[], status, createdAt
 
 ### Security Features:
 - Password hashing with bcrypt
