@@ -73,6 +73,7 @@ npm start
 3. **Carts Collection**: User shopping carts with items
 4. **Orders Collection**: Order history with status tracking
 5. **Complaints Collection**: Customer support tickets
+6. **Groups Collection**: Group orders with members and shared items
 
 ---
 
