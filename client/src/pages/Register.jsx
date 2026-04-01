@@ -6,21 +6,28 @@ function Register() {
   const { register } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleRegister = () => {
-    const result = register(email, password);
+  const handleRegister = async () => {
+    setMessage("");
+    setIsLoading(true);
 
-    if (result === "exists") {
-      setMessage("User already exists");
-    } else if (result === "registered") {
+    const success = await register(name, email, password);
+
+    if (success) {
       setMessage("Registration successful! Please login.");
       setTimeout(() => {
         navigate("/login");
       }, 1500);
+    } else {
+      setMessage("Registration failed. Please try again.");
     }
+    
+    setIsLoading(false);
   };
 
   return (
@@ -32,9 +39,18 @@ function Register() {
         </h2>
 
         <input
+          type="text"
+          placeholder="Name"
+          className="w-full mb-4 px-4 py-2 border rounded-lg"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+
+        <input
           type="email"
           placeholder="Email"
           className="w-full mb-4 px-4 py-2 border rounded-lg"
+          value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
 
@@ -42,6 +58,7 @@ function Register() {
           type="password"
           placeholder="Password"
           className="w-full mb-4 px-4 py-2 border rounded-lg"
+          value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
 
@@ -53,9 +70,10 @@ function Register() {
 
         <button
           onClick={handleRegister}
-          className="w-full bg-gold text-midnight py-2 rounded-lg font-semibold hover:opacity-90 transition"
+          disabled={isLoading}
+          className="w-full bg-gold text-midnight py-2 rounded-lg font-semibold hover:opacity-90 transition disabled:opacity-50"
         >
-          Register
+          {isLoading ? "Registering..." : "Register"}
         </button>
 
       </div>

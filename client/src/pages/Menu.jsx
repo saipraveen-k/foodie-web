@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from "react";
-import axios from "axios";
+import api from "../utils/axiosSetup";
 import { CartContext } from "../context/CartContext";
 
 function Menu() {
@@ -31,10 +31,12 @@ function Menu() {
 
   const fetchFoods = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/food");
-      setFoods(res.data);
+      const res = await api.get("/food");
+      if (res.data.foods) {
+        setFoods(res.data.foods);
+      }
     } catch (error) {
-      console.log(error);
+      console.error("Error fetching foods:", error);
     }
   };
 

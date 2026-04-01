@@ -77,6 +77,9 @@ router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // DEBUG: Log incoming credentials (email only, never log password in production!)
+    console.log("🔐 LOGIN ATTEMPT - Email:", email, "| Password length:", password ? password.length : 0);
+
     // Validation
     if (!email || !password) {
       return res.status(400).json({ 
@@ -85,14 +88,30 @@ router.post("/login", async (req, res) => {
     }
 
     // Find user
-    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    const normalizedEmail = email.toLowerCase().trim();
+    const user = await User.findOne({ email: normalizedEmail });
+    
+    // DEBUG: Log user lookup result
     if (!user) {
+      console.log("❌ LOGIN FAILED - User not found for email:", normalizedEmail);
       return res.status(401).json({ message: "Invalid email or password" });
     }
+    
+    console.log("✅ User found:", { 
+      id: user._id, 
+      email: user.email, 
+      passwordHashStarts: user.password.substring(0, 7),
+      role: user.role 
+    });
 
     // Check password
     const isMatch = await user.comparePassword(password);
+    
+    // DEBUG: Log password comparison result
+    console.log("🔑 Password comparison result:", isMatch ? "MATCH" : "NO MATCH");
+    
     if (!isMatch) {
+      console.log("❌ LOGIN FAILED - Password mismatch for user:", user.email);
       return res.status(401).json({ message: "Invalid email or password" });
     }
 

@@ -1,69 +1,42 @@
 import { useContext, useState } from "react";
 import { CartContext } from "../context/CartContext";
-import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function Cart() {
-
   const {
     cartItems,
-    addToCart,
-    decreaseFromCart,
     getTotalAmount,
-    clearCart
+    placeOrder
   } = useContext(CartContext);
-
+  
+  const navigate = useNavigate();
   const [address, setAddress] = useState("");
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [error, setError] = useState("");
 
   const deliveryFee = cartItems.length > 0 ? 40 : 0;
   const total = getTotalAmount() + deliveryFee;
 
-  const placeOrder = async () => {
+  const handlePlaceOrder = async () => {
+    setError("");
 
-    try {
-
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        alert("Please login first.");
-        return;
-      }
-
-      if (!address) {
-        alert("Please enter delivery address");
-        return;
-      }
-
-      const orderItems = cartItems.map(item => ({
-        food: item._id || item.id,
-        quantity: item.quantity
-      }));
-
-      await axios.post(
-        "http://localhost:5000/api/orders/place",
-        {
-          items: orderItems,
-          totalAmount: total,
-          address: address
-        },
-        {
-          headers: {
-            authorization: `Bearer ${token}`
-          }
-        }
-      );
-
-      alert("Order placed successfully 🎉");
-
-      clearCart();
-      setAddress("");
-
-    } catch (error) {
-
-      console.log(error);
-
-      alert("Error placing order");
+    if (!address || address.trim().length < 10) {
+      setError("Please enter a valid delivery address (minimum 10 characters)");
+      return;
     }
 
+    try {
+      setIsPlacingOrder(true);
+      await placeOrder(address);
+      alert("Order placed successfully! 🎉");
+      setAddress("");
+      navigate("/orders");
+    } catch (err) {
+      console.error("Order placement error:", err);
+      setError(err.message || "Error placing order. Please try again.");
+    } finally {
+      setIsPlacingOrder(false);
+    }
   };
 
   return (
@@ -79,52 +52,52 @@ function Cart() {
             <p className="text-midnight opacity-70 text-lg">
               Your cart is empty.
             </p>
+            <button
+              onClick={() => navigate("/menu")}
+              className="mt-4 bg-gold text-midnight px-6 py-2 rounded-lg font-semibold hover:opacity-90"
+            >
+              Browse Menu
+            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
 
             {/* ITEMS */}
-
             <div className="lg:col-span-2 space-y-6">
               {cartItems.map((item) => (
                 <div
-                  key={item._id || item.id}
+                  key={item._id}
                   className="bg-white p-6 rounded-xl shadow-md flex justify-between items-center"
                 >
-                  <div>
-                    <h2 className="text-xl font-heading text-midnight">
-                      {item.name}
-                    </h2>
-                    <p className="text-midnight opacity-70">
-                      ₹ {item.price}
-                    </p>
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={item.image || "https://via.placeholder.com/80"}
+                      alt={item.name}
+                      className="w-16 h-16 object-cover rounded-lg"
+                    />
+                    <div>
+                      <h2 className="text-xl font-heading text-midnight">
+                        {item.name}
+                      </h2>
+                      <p className="text-midnight opacity-70">
+                        ₹ {item.price}
+                      </p>
+                    </div>
                   </div>
 
                   <div className="flex items-center gap-4">
-
-                    <button
-                      onClick={() => decreaseFromCart(item)}
-                      className="bg-midnight text-cream px-3 py-1 rounded"
-                    >
-                      -
-                    </button>
-
-                    <span>{item.quantity}</span>
-
-                    <button
-                      onClick={() => addToCart(item)}
-                      className="bg-gold text-midnight px-3 py-1 rounded"
-                    >
-                      +
-                    </button>
-
+                    <span className="font-semibold text-midnight">
+                      {item.quantity}
+                    </span>
+                    <p className="text-gold font-bold">
+                      ₹ {(item.price * item.quantity).toFixed(2)}
+                    </p>
                   </div>
                 </div>
               ))}
             </div>
 
             {/* SUMMARY */}
-
             <div className="bg-white p-8 rounded-xl shadow-md h-fit">
 
               <h2 className="text-2xl font-heading text-midnight mb-6">
@@ -135,37 +108,44 @@ function Cart() {
 
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>₹ {getTotalAmount()}</span>
+                  <span>₹ {getTotalAmount().toFixed(2)}</span>
                 </div>
 
                 <div className="flex justify-between">
                   <span>Delivery Fee</span>
-                  <span>₹ {deliveryFee}</span>
+                  <span>₹ {deliveryFee.toFixed(2)}</span>
                 </div>
 
                 <hr />
 
-                <div className="flex justify-between font-bold">
+                <div className="flex justify-between font-bold text-lg">
                   <span>Total</span>
-                  <span>₹ {total}</span>
+                  <span className="text-gold">₹ {total.toFixed(2)}</span>
                 </div>
 
               </div>
 
               {/* ADDRESS INPUT */}
-
               <textarea
-                placeholder="Enter delivery address"
+                placeholder="Enter delivery address (minimum 10 characters)"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                className="w-full mt-6 p-3 border rounded-lg"
+                className="w-full mt-6 p-3 border rounded-lg focus:ring-2 focus:ring-gold"
+                rows={3}
               />
 
+              {error && (
+                <p className="text-red-500 text-sm mt-2">{error}</p>
+              )}
+
               <button
-                onClick={placeOrder}
-                className="mt-6 w-full bg-gold text-midnight py-3 rounded-lg font-semibold"
+                onClick={handlePlaceOrder}
+                disabled={isPlacingOrder}
+                className={`mt-6 w-full bg-gold text-midnight py-3 rounded-lg font-semibold transition ${
+                  isPlacingOrder ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'
+                }`}
               >
-                Place Order
+                {isPlacingOrder ? "Placing Order..." : "Place Order"}
               </button>
 
             </div>

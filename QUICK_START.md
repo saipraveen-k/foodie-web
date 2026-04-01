@@ -1,6 +1,27 @@
-# 🚀 Quick Start Guide - FoodieWeb Backend
+# 🚀 Quick Start Guide - FoodieWeb Full Stack
 
-## ⚡ Quick Setup (5 Minutes)
+## 🌐 Frontend Setup
+
+### 1. **Navigate to Client Directory**
+```bash
+cd client
+```
+
+### 2. **Install Frontend Dependencies**
+```bash
+npm install
+```
+
+### 3. **Start Frontend Development Server**
+```bash
+npm run dev
+```
+
+**🎉 Frontend is now running on `http://localhost:5173`**
+
+---
+
+## ⚡ Backend Setup (5 Minutes)
 
 ### 1. **Open Terminal & Navigate**
 ```bash
@@ -35,7 +56,24 @@ npm start
 
 ---
 
-## 🔐 Test Login Credentials
+## ✅ **Current Status - Full Stack Running!**
+
+### 🌐 **Frontend**: `http://localhost:5173` ✅
+- React app running and ready
+- Connected to backend API
+
+### 🖥 **Backend Server**: `http://localhost:5000` ✅
+- MongoDB Connected: `foodieweb` database
+- All collections created and populated
+- API endpoints ready
+
+### 🗄️ **MongoDB Compass**: `mongodb://localhost:27017/foodieweb` ✅
+- Database populated with sample data
+- All collections visible
+
+---
+
+## �� Test Login Credentials
 
 ### Admin Account:
 - **Email**: `admin@foodieweb.com`
@@ -44,6 +82,8 @@ npm start
 ### Test Users:
 - **Email**: `john@example.com` → **Password**: `user123`
 - **Email**: `jane@example.com` → **Password**: `user123`
+
+**✅ All passwords properly hashed and working!**
 
 ---
 
@@ -113,12 +153,12 @@ mongod
 ```
 
 ### ❌ "Port 5000 already in use"
-**Fix**: Kill the process or use different port
+**Fix**: Kill process or use different port
 ```bash
 # Find process using port 5000
 netstat -ano | findstr :5000
 
-# Kill the process (replace PID)
+# Kill process (replace PID)
 taskkill /PID <PID> /F
 
 # Or use different port
@@ -161,26 +201,30 @@ This will clear all data and re-populate with sample data.
 
 | Command | Purpose |
 |---------|---------|
-| `npm start` | Start production server |
-| `npm run dev` | Start development server |
-| `node seedDatabase.js` | Reset & seed database |
+| `cd client && npm run dev` | Start frontend development server |
+| `cd backend && npm start` | Start backend production server |
+| `cd backend && npm run dev` | Start backend development server |
+| `cd backend && node seedDatabase.js` | Reset & seed database |
 | `net start MongoDB` | Start MongoDB service |
-| `curl http://localhost:5000` | Test server health |
+| `curl http://localhost:5000` | Test backend health |
+| `curl http://localhost:5173` | Test frontend health |
 
 ---
 
 ## 🎯 Next Steps
 
-1. ✅ Backend is running
-2. ✅ Database is populated
-3. ✅ MongoDB Compass shows data
-4. ✅ Frontend can connect
-5. ✅ Test all features
+1. ✅ Frontend is running on port 5173
+2. ✅ Backend is running on port 5000
+3. ✅ Database is populated and connected
+4. ✅ MongoDB Compass shows all collections
+5. ✅ Login credentials working
+6. ✅ Full stack communication established
+7. ✅ Test all features
 
-**🚀 Your FoodieWeb backend is ready for production!**
+**🚀 Your FoodieWeb full stack is fully operational!**
 
 ---
 
 ## 📚 Full Documentation
 
-For detailed API documentation, see `README.md` in the backend folder.
+For detailed API documentation, see `README.md` in backend folder.

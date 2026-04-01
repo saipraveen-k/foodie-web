@@ -2,15 +2,19 @@ import { useContext } from "react";
 import { Navigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
-function ProtectedRoute({ children }) {
+function AdminRoute({ children }) {
   const { user } = useContext(AuthContext);
 
-  // Allow any authenticated user to access protected routes
+  // Check if user is authenticated AND has admin role
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (user.role !== "admin") {
+    return <Navigate to="/" replace />;
   }
 
   return children;
 }
 
-export default ProtectedRoute;
+export default AdminRoute;

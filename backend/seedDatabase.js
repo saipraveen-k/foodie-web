@@ -121,9 +121,9 @@ async function seedDatabase() {
     const Order = require("./models/Order");
     const Complaint = require("./models/Complaint");
 
-    // Insert sample users
+    // Insert sample users - Using create() instead of insertMany() to trigger pre-save middleware for password hashing
     console.log("👥 Creating sample users...");
-    const createdUsers = await User.insertMany(sampleData.users);
+    const createdUsers = await User.create(sampleData.users);
     console.log(`✅ Created ${createdUsers.length} users`);
 
     // Insert sample foods
